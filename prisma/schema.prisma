@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model comment {
+  id         String   @id @default(uuid())
+  post_id    Int
+  user_Id    Int
+  comment    String
+  created_at DateTime @default(now())
+  post       post     @relation(fields: [post_id], references: [id], onDelete: Cascade, map: "Comment_post_id_fkey")
+  user       user     @relation(fields: [user_Id], references: [id], onDelete: Cascade, map: "Comment_user_Id_fkey")
+  @@index([post_id], map: "Comment_post_id_fkey")
+  @@index([user_Id], map: "Comment_user_Id_fkey")
+}
+
+model post {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String
+  create_at   DateTime  @default(now())
+  authorId    Int
+  comment     comment[]
+  user        user      @relation(fields: [authorId], references: [id], onDelete: Cascade, map: "Post_authorId_fkey")
+
+  @@index([authorId], map: "Post_authorId_fkey")
+}
+model product {
+  id Int @id @default(autoincrement())
+  product_name String
+  product_description String
+  quantity Int
+  product_condition String
+  price Int
+  user_id Int
+  user user @relation(fields:[user_id],references:[id],onDelete:Cascade)
+}
+model user {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique(map: "User_email_key")
+  password      String
+  firstName     String
+  lastName      String
+  user_type     String?
+  address       String?
+  city          String?
+  phone_number  String?
+  delivery_type String?
+  createdAt     DateTime  @default(now())
+  comment_count Int    @default(0)
+  comment       comment[]
+  post          post[]
+  products      product[]
+}
+
