@@ -38,6 +38,7 @@ model product {
   product_condition String
   price Int
   featured Boolean?
+  product_img Json?
   user_id Int
   user user @relation(fields:[user_id],references:[id],onDelete:Cascade)
 }
