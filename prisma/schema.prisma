@@ -37,6 +37,7 @@ model product {
   quantity Int
   product_condition String
   price Int
+  featured Boolean?
   user_id Int
   user user @relation(fields:[user_id],references:[id],onDelete:Cascade)
 }
