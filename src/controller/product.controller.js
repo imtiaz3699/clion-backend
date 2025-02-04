@@ -1,14 +1,19 @@
-import { apiErrorResponse, apiSuccessResponse, prisma } from "../utils/utils";
+import {
+  apiErrorResponse,
+  apiSuccessResponse,
+  prisma,
+} from "../utils/utils.js";
 export const addProduct = async (req, res) => {
   const {
     product_name,
     product_description,
-    product_images,
+    product_img,
     quantity,
     product_condition,
     price,
     user_id,
-    category,
+    product_category,
+    featured,
   } = req.body;
   if (!product_name) {
     return apiErrorResponse(res, 400, "Product name is required");
@@ -21,15 +26,13 @@ export const addProduct = async (req, res) => {
       data: {
         product_name,
         product_description,
-        product_images,
+        product_img,
         quantity,
         product_condition,
         price,
         user_id,
-        category,
-      },
-      select: {
-        product_name: true,
+        product_category,
+        featured,
       },
     });
     if (!product) {
@@ -48,18 +51,19 @@ export const addProduct = async (req, res) => {
     return apiErrorResponse(res, 500, "Error creating product");
   }
 };
-
 export const updateProduct = async (req, res) => {
   const productId = req.params.id;
+  console.log(productId, "fadlfjhldakfj");
   const {
     product_name,
     product_description,
-    product_images,
+    product_img,
     quantity,
     product_condition,
     price,
     user_id,
-    category,
+    featured,
+    product_category,
   } = req.body;
   if (!productId) {
     return apiErrorResponse(res, 400, "Product Id is required");
@@ -69,22 +73,20 @@ export const updateProduct = async (req, res) => {
   }
   try {
     const product = await prisma.product.update({
-      where: { product_id: productId, user_id: user_id },
+      where: { id: parseInt(productId, 10), user_id: user_id },
       data: {
         product_name,
         product_description,
-        product_images,
+        product_img,
         quantity,
         product_condition,
         price,
         user_id,
-        category,
-      },
-      select: {
-        product_name: true,
+        featured,
+        product_category,
       },
     });
-    if (!product.id) {
+    if (!product) {
       return apiErrorResponse(res, 400, "Product not found.");
     }
     if (product) {
@@ -107,8 +109,14 @@ export const deleteProduct = async (req, res) => {
     return apiErrorResponse(res, 400, "Product Id is required.");
   }
   try {
+    const productExists = await prisma.product.findUnique({
+      where: { id: parseInt(productId, 10) },
+    });
+    if (!productExists) {
+      return apiErrorResponse(res, 400, "Product not found.");
+    }
     const product = await prisma.product.delete({
-      where: { product_id: productId, user_id: req.user.id },
+      where: { id: parseInt(productId, 10) },
     });
     if (product) {
       return apiSuccessResponse(res, 200, {}, "Product deleted successfully.");
@@ -119,30 +127,44 @@ export const deleteProduct = async (req, res) => {
   }
 };
 export const getProducts = async (req, res) => {
-  const productId = req.query.id;
+  const { page = 1, limit = 10, productId } = req.query;
   try {
-    const products = await prisma.product.findMany({
-      where: { user_id: req.user.id,id:productId },
-      select: {
-        product_name: true,
-        product_description: true,
-        product_images: true,
-        quantity: true,
-        product_condition: true,
-        price: true,
-        category: true,
-        },
-    });
-    if (!products) {
-      return apiErrorResponse(res, 400, "Products not found.");
-    }
-    if (products) {
+    if (productId) {
+      const product = await prisma.product.findUnique({
+        where: { id: parseInt(productId, 10) },
+      });
+      if (!product) {
+        return apiErrorResponse(res, 400, "Product not found.");
+      }
       return apiSuccessResponse(
         res,
         200,
-        "Products found successfully",
-        products
+        "Product retrieved successfully",
+        product
       );
+    } else {
+      let { page = 1, limit = 10 } = req.query; // Default to page 1, limit 10
+      page = parseInt(page);
+      limit = parseInt(limit);
+      const skip = (page - 1) * limit;
+      const products = await prisma.product.findMany({
+        skip,
+        take: limit,
+      });
+      const totalProducts = await prisma.product.count(); // Get total count of products
+      const totalPages = Math.ceil(totalProducts / limit);
+      if (!products.length) {
+        return apiErrorResponse(res, 400, "No products found.");
+      }
+      return apiSuccessResponse(res, 200, "Products retrieved successfully", {
+        products,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalProducts,
+          limit,
+        },
+      });
     }
   } catch (e) {
     console.log(e);

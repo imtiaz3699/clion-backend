@@ -39,8 +39,16 @@ model product {
   price Int
   featured Boolean?
   product_img Json?
+  product_category String?
+  category   category? @relation(fields: [product_category],references:[id],onDelete:Cascade)
   user_id Int
   user user @relation(fields:[user_id],references:[id],onDelete:Cascade)
+}
+model category {
+  id String @unique @default(uuid())
+  category_name     String
+  description       String?
+  product   product[]
 }
 model user {
   id            Int       @id @default(autoincrement())
