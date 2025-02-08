@@ -148,6 +148,47 @@ export const updateUser = async (req, res) => {
     return apiErrorResponse(res, 500, "Server error");
   }
 };
+export const updatePassword = async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const { oldPassword, newPassword, confirmPassword } = req.body;
+  try {
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        id: true,
+        password:true,
+      },
+    });
+
+    if (!existingUser) {
+      return apiErrorResponse(res, 400, "User not found");
+    }
+    if(newPassword !== confirmPassword) {
+      return apiErrorResponse(res, 400, "Password and confirm password does not match");
+    }
+    const isPasswordValid = await bcrypt.compare(oldPassword, existingUser.password);
+    if (!isPasswordValid) {
+      return apiErrorResponse(res, 400, "Old Password is wrong");
+    }
+
+    const user = await prisma.user.update({
+      where: {
+        id: id,
+      },
+      data: {
+        password:newPassword,
+      },
+    });
+    if (user.id) {
+      return apiSuccessResponse(res, 200, "User updated successfully", user);
+    }
+  } catch (e) {
+    console.log(e);
+    return apiErrorResponse(res, 500, "Server error");
+  }
+};
 export const getUser = async (req, res) => {
   const userId = req.user.id;
   try {
@@ -160,8 +201,6 @@ export const getUser = async (req, res) => {
       return apiErrorResponse(res, 400, "User not found");
     }
     return apiSuccessResponse(res, 200, "User found successfully", user);
-  } catch (e) {
-    
-  }
+  } catch (e) {}
   return;
 };
