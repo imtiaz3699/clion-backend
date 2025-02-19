@@ -1,3 +1,4 @@
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import {
   apiErrorResponse,
   apiSuccessResponse,
@@ -7,7 +8,6 @@ export const addProduct = async (req, res) => {
   const {
     product_name,
     product_description,
-    product_img,
     quantity,
     product_condition,
     price,
@@ -15,24 +15,31 @@ export const addProduct = async (req, res) => {
     product_category,
     featured,
   } = req.body;
+
   if (!product_name) {
     return apiErrorResponse(res, 400, "Product name is required");
   }
   if (!user_id) {
     return apiErrorResponse(res, 400, "User Id is required.");
   }
+  const uploadedImages = await Promise.all(
+    req?.files?.product_img?.map(async (file) => {
+      const uploadedImage = await uploadOnCloudinary(file.path);
+      return uploadedImage.url; // Store only the image URL
+    })
+  );
   try {
     const product = await prisma.product.create({
       data: {
         product_name,
         product_description,
-        product_img,
-        quantity,
+        quantity:parseInt(quantity,10),
         product_condition,
-        price,
-        user_id,
+        product_img:uploadedImages,
+        price:parseInt(price,10),
+        user_id:parseInt(user_id,10),
         product_category,
-        featured,
+        featured:Boolean(featured),
       },
     });
     if (!product) {
@@ -72,12 +79,18 @@ export const updateProduct = async (req, res) => {
     return apiErrorResponse(res, 400, "Product Name is required.");
   }
   try {
+    const uploadedImages = await Promise.all(
+      req?.files?.product_img?.map(async (file) => {
+        const uploadedImage = await uploadOnCloudinary(file.path);
+        return uploadedImage.url; // Store only the image URL
+      })
+    );
     const product = await prisma.product.update({
       where: { id: parseInt(productId, 10), user_id: user_id },
       data: {
         product_name,
         product_description,
-        product_img,
+        product_img:uploadedImages,
         quantity,
         product_condition,
         price,

@@ -97,7 +97,7 @@ export const loginUser = async (req, res) => {
 };
 
 export const updateUser = async (req, res) => {
-  console.log(req, "fadsUserRequrest");
+  
   const id = parseInt(req.params.id, 10);
   const {
     firstName,
@@ -158,17 +158,24 @@ export const updatePassword = async (req, res) => {
       },
       select: {
         id: true,
-        password:true,
+        password: true,
       },
     });
 
     if (!existingUser) {
       return apiErrorResponse(res, 400, "User not found");
     }
-    if(newPassword !== confirmPassword) {
-      return apiErrorResponse(res, 400, "Password and confirm password does not match");
+    if (newPassword !== confirmPassword) {
+      return apiErrorResponse(
+        res,
+        400,
+        "Password and confirm password does not match"
+      );
     }
-    const isPasswordValid = await bcrypt.compare(oldPassword, existingUser.password);
+    const isPasswordValid = await bcrypt.compare(
+      oldPassword,
+      existingUser.password
+    );
     if (!isPasswordValid) {
       return apiErrorResponse(res, 400, "Old Password is wrong");
     }
@@ -178,7 +185,7 @@ export const updatePassword = async (req, res) => {
         id: id,
       },
       data: {
-        password:newPassword,
+        password: newPassword,
       },
     });
     if (user.id) {
