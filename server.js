@@ -6,14 +6,7 @@ import multer from "multer";
 
 const app = express();
 const port = process.env.PORT || 5000;
-app.use(cors(
-    {
-    origin: "http://localhost:3000", // Allow frontend URL
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials:true
-    }
-))
+app.use(cors())
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);    
 })

@@ -184,3 +184,6 @@ export const getProducts = async (req, res) => {
     return apiErrorResponse(res, 500, "Error getting products");
   }
 };
+const addBannerProducts = async (req,res) => {
+  
+}
