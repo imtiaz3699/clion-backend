@@ -33,13 +33,13 @@ export const addProduct = async (req, res) => {
       data: {
         product_name,
         product_description,
-        quantity:parseInt(quantity,10),
+        quantity: parseInt(quantity, 10),
         product_condition,
-        product_img:uploadedImages,
-        price:parseInt(price,10),
-        user_id:parseInt(user_id,10),
+        product_img: uploadedImages,
+        price: parseInt(price, 10),
+        user_id: parseInt(user_id, 10),
         product_category,
-        featured:Boolean(featured),
+        featured: Boolean(featured),
       },
     });
     if (!product) {
@@ -90,7 +90,7 @@ export const updateProduct = async (req, res) => {
       data: {
         product_name,
         product_description,
-        product_img:uploadedImages,
+        product_img: uploadedImages,
         quantity,
         product_condition,
         price,
@@ -184,6 +184,3 @@ export const getProducts = async (req, res) => {
     return apiErrorResponse(res, 500, "Error getting products");
   }
 };
-const addBannerProducts = async (req,res) => {
-  
-}
