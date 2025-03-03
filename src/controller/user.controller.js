@@ -83,7 +83,7 @@ export const loginUser = async (req, res) => {
         delivery_type: user.delivery_type,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "30d" }
     );
     const data = {
       data: user,
@@ -97,7 +97,6 @@ export const loginUser = async (req, res) => {
 };
 
 export const updateUser = async (req, res) => {
-  
   const id = parseInt(req.params.id, 10);
   const {
     firstName,
@@ -210,4 +209,31 @@ export const getUser = async (req, res) => {
     return apiSuccessResponse(res, 200, "User found successfully", user);
   } catch (e) {}
   return;
+};
+
+
+export const refreshToken = async (req, res) => {
+  const refreshToken = req.headers.authorization;
+  if (!refreshToken)
+    return res.status(403).json({ message: "No refresh token" });
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+    const newAccessToken = jwt.sign(
+      {
+        id: decoded.id,
+        email: decoded.email,
+        user_type: decoded.user_type,
+        address: decoded.address,
+        city: decoded.city,
+        phone_number: decoded.phone_number,
+        delivery_type: decoded.delivery_type,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+    res.json({ accessToken: newAccessToken });
+  } catch (error) {
+    console.log(error,'fasdlfjasldkh')
+    res.status(403).json({ message: "Invalid refresh token" });
+  }
 };

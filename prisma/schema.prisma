@@ -43,13 +43,14 @@ model product {
   featured            Boolean?
   product_img         Json?
   product_category    String?
-  category            category? @relation(fields: [product_category], references: [id], onDelete: Cascade)
+  category            category? @relation(fields: [product_category], references: [id], onDelete: Cascade,onUpdate: Cascade)
   user_id             Int
-  user                user      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user                user      @relation(fields: [user_id], references: [id], onDelete: Cascade,onUpdate: Cascade)
   comment_id          String?
-  comment             comment?  @relation(fields: [comment_id], references: [id], onDelete: Cascade)
+  comment             comment?  @relation(fields: [comment_id], references: [id], onDelete: Cascade,onUpdate: Cascade)
   banner_id           String?
-  banner              banner?   @relation(fields: [banner_id], references: [id], onDelete: Cascade)
+  banner              banner?   @relation(fields: [banner_id], references: [id], onDelete: Cascade,onUpdate: Cascade)
+  cart                cart[]
 }
 
 model category {
@@ -76,6 +77,15 @@ model user {
   comment       comment[]
   post          post[]
   products      product[]
+  cart          cart[]
+  
+}
+model cart {
+  id String @id @default(uuid())
+  user_id     Int
+  user        user      @relation(fields: [user_id], references: [id], onDelete: Cascade,onUpdate: Cascade)
+  product_id Int
+  product     product @relation(fields:[product_id],references: [id],onDelete: Cascade,onUpdate: Cascade)
 }
 
 model banner {

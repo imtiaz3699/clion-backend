@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.post('/create-product',authenticateJWT,upload.fields([{name:'product_img',maxCount:5}]), addProduct);
 router.put('/update-product/:id',authenticateJWT, updateProduct);
-router.get('/get-products',authenticateJWT,getProducts)
+router.get('/get-products',getProducts)
 router.delete('/delete-products/:id',authenticateJWT,deleteProduct)
 export default router
