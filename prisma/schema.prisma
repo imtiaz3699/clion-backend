@@ -57,6 +57,7 @@ model category {
   id            String    @unique @default(uuid())
   category_name String
   description   String?
+  quantity      Int?
   product       product[]
 }
 
@@ -83,6 +84,7 @@ model user {
 model cart {
   id String @id @default(uuid())
   user_id     Int
+  quantity    Int?
   user        user      @relation(fields: [user_id], references: [id], onDelete: Cascade,onUpdate: Cascade)
   product_id Int
   product     product @relation(fields:[product_id],references: [id],onDelete: Cascade,onUpdate: Cascade)
