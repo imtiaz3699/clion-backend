@@ -51,6 +51,8 @@ model product {
   banner_id           String?
   banner              banner?   @relation(fields: [banner_id], references: [id], onDelete: Cascade,onUpdate: Cascade)
   cart                cart[]
+  order               order[]
+  orders   OrderProduct[]
 }
 
 model category {
@@ -88,8 +90,40 @@ model cart {
   user        user      @relation(fields: [user_id], references: [id], onDelete: Cascade,onUpdate: Cascade)
   product_id Int
   product     product @relation(fields:[product_id],references: [id],onDelete: Cascade,onUpdate: Cascade)
+  orders   order[] @relation("OrderCart")
 }
 
+
+
+model order {
+  id String @id @default(uuid())
+  product_id Int
+  product product @relation(fields: [product_id],references: [id])
+  email String?
+  first_name String?
+  last_name String?
+  address String?
+  apartment String?
+  city  String?
+  postal_code String?
+  phone_number String?
+  carts cart[] @relation("OrderCart")
+  products OrderProduct[]
+  quantity String?
+  user_id String?
+}
+
+model OrderProduct {
+  id         String   @id @default(uuid())
+  orderId    String
+  productId  Int
+  quantity   Int
+
+  order      order   @relation(fields: [orderId], references: [id])
+  product    product @relation(fields: [productId], references: [id])
+
+  @@unique([orderId, productId]) // Ensures no duplicate product in the same order
+}
 model banner {
   id          String    @id @default(uuid())
   product     product[]
@@ -97,3 +131,5 @@ model banner {
   description String?
   show        Boolean?  @default(false)
 }
+
+
