@@ -1,4 +1,4 @@
-import { Prisma } from "../utils/utils.js";
+import { prisma } from "../utils/utils.js";
 
 export const createOrder = async (req, res) => {
   try {
