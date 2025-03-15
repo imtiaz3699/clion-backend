@@ -43,6 +43,8 @@ model product {
   featured            Boolean?
   product_img         Json?
   product_category    String?
+  in_stock            Int?
+  sold                Int?
   category            category? @relation(fields: [product_category], references: [id], onDelete: Cascade,onUpdate: Cascade)
   user_id             Int
   user                user      @relation(fields: [user_id], references: [id], onDelete: Cascade,onUpdate: Cascade)
@@ -51,8 +53,7 @@ model product {
   banner_id           String?
   banner              banner?   @relation(fields: [banner_id], references: [id], onDelete: Cascade,onUpdate: Cascade)
   cart                cart[]
-  order               order[]
-  orders   OrderProduct[]
+  order               orderProducts[]
 }
 
 model category {
@@ -81,7 +82,6 @@ model user {
   post          post[]
   products      product[]
   cart          cart[]
-  
 }
 model cart {
   id String @id @default(uuid())
@@ -90,39 +90,35 @@ model cart {
   user        user      @relation(fields: [user_id], references: [id], onDelete: Cascade,onUpdate: Cascade)
   product_id Int
   product     product @relation(fields:[product_id],references: [id],onDelete: Cascade,onUpdate: Cascade)
-  orders   order[] @relation("OrderCart")
 }
 
 
 
 model order {
-  id String @id @default(uuid())
-  product_id Int
-  product product @relation(fields: [product_id],references: [id])
-  email String?
-  first_name String?
-  last_name String?
-  address String?
-  apartment String?
-  city  String?
-  postal_code String?
+  id           String        @id @default(uuid())
+  products        orderProducts[]
+  user_id      Int
+  email        String?
+  first_name   String?
+  last_name    String?
+  address      String?
+  apartment    String?
+  city         String?
+  postal_code  String?
   phone_number String?
-  carts cart[] @relation("OrderCart")
-  products OrderProduct[]
-  quantity String?
-  user_id String?
+  quantity     String?
+  created_at   DateTime      @default(now()) // Timestamp when order is created
+  updated_at   DateTime      @updatedAt      // Auto-updates on change
 }
 
-model OrderProduct {
-  id         String   @id @default(uuid())
-  orderId    String
-  productId  Int
-  quantity   Int
-
-  order      order   @relation(fields: [orderId], references: [id])
-  product    product @relation(fields: [productId], references: [id])
-
-  @@unique([orderId, productId]) // Ensures no duplicate product in the same order
+model orderProducts{
+  id Int     @id @default(autoincrement())
+  orderId String
+  productId Int
+  quantity Int?
+  product product @relation(fields: [productId],references: [id]) 
+  order order @relation(fields:[orderId],references: [id])
+  @@unique([orderId, productId])
 }
 model banner {
   id          String    @id @default(uuid())
