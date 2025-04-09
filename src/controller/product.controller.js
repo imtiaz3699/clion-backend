@@ -144,7 +144,7 @@ export const deleteProduct = async (req, res) => {
   }
 };
 export const getProducts = async (req, res) => {
-  const { page = 1, limit = 10, productId, userId } = req.query;
+  const { page = 1, limit = 10, productId, userId,categoryId,search } = req.query;
 
   const pageNum = parseInt(page, 10) || 1;
   const limitNum = parseInt(limit, 10) || 10;
@@ -156,7 +156,12 @@ export const getProducts = async (req, res) => {
   if (productId) {
     whereClause = { ...whereClause, id: parseInt(productId, 10) };
   }
-
+  if(categoryId) {
+    whereClause = { ...whereClause, product_category: categoryId };
+  }
+  if(search) {
+    whereClause = { ...whereClause, product_name: { contains: search } };
+  }
   try {
     const skip = (pageNum - 1) * limitNum;
     const products = await prisma.product.findMany({
@@ -184,3 +189,21 @@ export const getProducts = async (req, res) => {
     return apiErrorResponse(res, 500, "Error getting products");
   }
 };
+
+export const getSingleProduct = async (req,res) => {
+  const productId = req.params.id;
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id: parseInt(productId, 10) },
+    });
+    if (!product) {
+      return apiErrorResponse(res, 400, "Product not found.");
+    }
+    if (product) {
+      return apiSuccessResponse(res, 200, "Product found successfully.", product);
+    }
+  } catch (e) {
+    console.log(e);
+    return apiErrorResponse(res, 500, "Error getting product");
+  }
+}
