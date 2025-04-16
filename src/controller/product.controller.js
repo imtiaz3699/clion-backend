@@ -14,6 +14,10 @@ export const addProduct = async (req, res) => {
     user_id,
     product_category,
     featured,
+    rating,
+    discount,
+    color,
+    brand,
   } = req.body;
 
   if (!product_name) {
@@ -44,6 +48,10 @@ export const addProduct = async (req, res) => {
         user_id: parseInt(user_id, 10),
         product_category,
         featured: Boolean(featured),
+        rating:rating,
+        discount,discount,
+        color,
+        brand
       },
     });
     if (!product) {
@@ -195,6 +203,9 @@ export const getSingleProduct = async (req,res) => {
   try {
     const product = await prisma.product.findUnique({
       where: { id: parseInt(productId, 10) },
+      include:{
+        category:true
+      }
     });
     if (!product) {
       return apiErrorResponse(res, 400, "Product not found.");

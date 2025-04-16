@@ -3,8 +3,8 @@ import { addRemoveFromCart, getCart, removeFromCart, updateCart } from '../contr
 import { authenticateJWT } from '../middleware/authenticate.js';
 
 const router = express.Router();
-router.post("/add-to-cart",authenticateJWT, addRemoveFromCart);
-router.delete("/remove-from-cart/:id",authenticateJWT, removeFromCart);
-router.get("/get-cart",authenticateJWT,getCart);
-router.put("/update-cart/:id",authenticateJWT,updateCart);
+router.post("/add-to-cart", addRemoveFromCart);
+router.delete("/remove-from-cart/:id", removeFromCart);
+router.get("/get-cart",getCart);
+router.put("/update-cart/:id",updateCart);
 export default router;

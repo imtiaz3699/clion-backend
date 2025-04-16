@@ -5,22 +5,34 @@ import {
 } from "../utils/utils.js";
 
 export const addRemoveFromCart = async (req, res) => {
-  const { userId, productId, quantity } = req.body;
-  if (!userId && !productId) {
+  const { userId, productId, quantity, guestId } = req.body;
+  if (!guestId && !productId) {
     return apiErrorResponse(res, 400, "Product id and user id is required.");
   }
   if (quantity < 1) {
     return apiErrorResponse(res, 400, "Quantity is required.");
   }
   try {
-    const createCart = await prisma.cart.create({
-      data: {
-        user_id: userId,
-        product_id: productId,
-        quantity: quantity,
-      },
+    const cartExists = await prisma.cart.findFirst({
+      where: { product_id: productId, guestId: guestId },
     });
-    return apiSuccessResponse(res, 200, "Product added to cart", createCart);
+    if (cartExists) {
+      const updateCart = await prisma.cart.update({
+        where: { id:cartExists.id,product_id: productId, guestId: guestId },
+        data: { quantity: quantity },
+      });
+      return apiSuccessResponse(res, 200, "Product added to cart", updateCart);
+    } else {
+      const createCart = await prisma.cart.create({
+        data: {
+          ...(userId && { user_id: userId }),
+          product_id: productId,
+          quantity: quantity,
+          guestId: guestId,
+        },
+      });
+      return apiSuccessResponse(res, 200, "Product added to cart", createCart);
+    }
   } catch (e) {
     console.log(e);
     return apiErrorResponse(res, 500, "Internal server error.");
@@ -40,32 +52,32 @@ export const updateCart = async (req, res) => {
   }
   try {
     const cartExists = await prisma.cart.findUnique({
-      where:{id:cartId}
-    })
-    if(!cartExists) {
-      return apiErrorResponse(res,400,'Cart does not exists.');
+      where: { id: cartId },
+    });
+    if (!cartExists) {
+      return apiErrorResponse(res, 400, "Cart does not exists.");
     }
     const update = await prisma.cart.update({
-      where:{id:cartId,user_id:userId},
-      data:{
-        product_id:productId,
-        quantity:quantity,
-      }
-    })
-    return apiSuccessResponse(res,200,"Cart updated",update);  
+      where: { id: cartId, user_id: userId },
+      data: {
+        product_id: productId,
+        quantity: quantity,
+      },
+    });
+    return apiSuccessResponse(res, 200, "Cart updated", update);
   } catch (e) {
     console.log(e);
-    return apiErrorResponse(res,500,'Internal server error.')
+    return apiErrorResponse(res, 500, "Internal server error.");
   }
 };
 export const getCart = async (req, res) => {
   const userId = req.query.userId;
-  const { page = 1, limit = 10 } = req.query;
+  const { page = 1, limit = 10, guestId } = req.query;
+  console.log(guestId, "fadsfljaskfhdas");
   try {
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    console.log(skip, "skipness");
     const cart = await prisma.cart.findMany({
-      where: { user_id: userId },
+      where: { guestId: guestId },
       include: { product: true },
     });
     const totalAmount = cart.reduce((total, product) => {
@@ -84,7 +96,6 @@ export const getCart = async (req, res) => {
 };
 
 export const removeFromCart = async (req, res) => {
-  const userId = req.user.id;
   const cartId = req.params.id;
 
   if (!cartId) {
@@ -92,13 +103,13 @@ export const removeFromCart = async (req, res) => {
   }
   try {
     const isCartExisted = await prisma.cart.findUnique({
-      where: { id: cartId, user_id: userId },
+      where: { id: cartId },
     });
     if (!isCartExisted?.id) {
       return apiErrorResponse(res, 400, "Cart does not exist.");
     }
     const deleteCart = await prisma.cart.delete({
-      where: { user_id: userId, id: cartId },
+      where: { id: cartId },
     });
     return apiSuccessResponse(
       res,
